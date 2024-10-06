@@ -40,7 +40,7 @@ def call_prompt(message: str, reality_type: str, brutality_type: str, isDetailed
             f"Story must be {brutality[brutality_type]}. "
             "Include emojis for each event. "
             "Format: JSON string. STRICT! No excessive words! Use the language provided. "
-            "[{evt: event, dt: date, emj: emoji }, ...] "
+            "[{evt: event, dt: date, emj: emoji }, ...] ИСПОЛЬЗУЙ МАТЫ ДЛЯ КРАСНОРЕЧИЯ"
             f"{detailed}{population}"
         ),        PromptType.CONTINUE: "Continue the story in the same format from the year you ended. (Use the language provided here). All the events must be logically connected, as well as population [{evt: event, dt: date, emj: emoji }",
     }
