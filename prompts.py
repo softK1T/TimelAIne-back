@@ -20,7 +20,7 @@ def call_prompt(message: str, reality_type: str, brutality_type: str, isDetailed
                 prompt_type: str = PromptType.DEFAULT) -> str:
     reality = {
         "unreal": "unreal and just interesting to read, imagine something very uncommon",
-        "real": "close to reality",
+        "real": "close to reality"
     }
 
     brutality = {
@@ -30,20 +30,54 @@ def call_prompt(message: str, reality_type: str, brutality_type: str, isDetailed
         "most_brutal": "the most brutal in the world",
         "hell": "the world is in a literal hell"
     }
-    detailed = "Provide me detailed information to each event as a new key-value pair (400 characters) dtl: details " if isDetailed else ''
-    population = "Provide me number of population of Earth to each event as a new key-value pair (format: rounded value to 2 decimals and literal k, m, b etc) ) pop: population " if isPopulation else ''
-    prompts: Dict[str, str] = {
-        PromptType.DEFAULT: (
-            f"Create an alternative timeline. Event: {message}. "
-            "Give 5 key global events likely to occur and their dates. "
-            f"Timeline must be {reality[reality_type]}. Key events should be max 150 characters and logically connected. "
-            f"Story must be {brutality[brutality_type]}. "
-            "Include emojis for each event. "
-            "Format: JSON string. STRICT! No excessive words! Use the language provided. "
-            "[{evt: event, dt: date, emj: emoji }, ...] ИСПОЛЬЗУЙ МАТЫ ДЛЯ КРАСНОРЕЧИЯ"
-            f"{detailed}{population}"
-        ),        PromptType.CONTINUE: "Continue the story in the same format from the year you ended. (Use the language provided here). All the events must be logically connected, as well as population [{evt: event, dt: date, emj: emoji }",
-    }
 
+    detailed = "Add detailed information for each event (up to 400 characters). Add a detailed information about the conflicts that are now active (can exceed characters limit)" if isDetailed else ''
+
+    population = "Provide Earth's population at the time of each event, rounded to two decimals and use units (k, m, b)" if isPopulation else ''
+
+    prompts: Dict[str, str] = {
+        PromptType.DEFAULT: f"""
+            Create an alternative global timeline featuring the event: '{message}'.
+            Identify 5 key global events that are likely to occur, with specific dates.
+            Timeline must be {reality[reality_type]}.
+            Story must be {brutality[brutality_type]}.
+
+            **Format:** JSON string
+
+            **Instructions:**
+            0. CREATE EVENTS ONLY ABOUT THE MAIN EVENT 
+            1. Each event must be concise, a maximum of 150 characters.
+            2. Include an emojis (up to 3) for each event.
+            3. Use only the event language in your response.
+            4. Use the communicating style the same as the message style (official or non-official).
+            5. The storyline should be tied together with logical connections.
+            6. Emojis must only be included in the emojis field, dates only in dates field
+            7. Include the most interesting information (write about countries, cities)
+            {detailed}
+            {population}
+            **Example JSON structure:**
+            [            {{                "evt": "Global Event Occurs",                "dt": "YYYY-MM-DD",                "emj": "🔍",                "dtl": "Detailed description of the event."(if included in instructions),                "pop": "X.XXb"(if included in instructions)            }}        ]
+        """,
+        PromptType.CONTINUE: (f"""
+            Continue the story in the same format from the year you ended. 
+            "All events must be logically connected, including population info. 
+            "Use the same language provided here.
+            ** Instructions: **
+            1. Each event must be concise, a maximum of 150 characters.
+            2. Include an emojis (up to 3) for each event.
+            3. Use the message language in your response.
+            4. Use the communicating style the same as the message style (official or non-official).
+            5. The storyline should be tied together with logical connections.
+            6. Emojis must only be included in the emojis field, dates only in dates field
+            7. Include the most interesting information (write about countries, cities)
+            {detailed}
+            {population}
+            ** Example JSON structure:**
+            [{{"evt": "Global Event Occurs", "dt": "YYYY-MM-DD", "emj": "🔍", "dtl": "Detailed description of the event.",
+           "pop": "X.XXb"}}]
+           Main event: {message}
+    """
+                              )
+    }
     # Return the requested prompt type or fall back to the default
     return prompts.get(prompt_type, prompts[PromptType.DEFAULT])
